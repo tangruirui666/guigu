@@ -2,8 +2,11 @@ import React, { Component } from "react";
 import "./login.less";
 //注意图片导入方式
 import logo from "./images/logo.png";
-import { Form, Icon, Input, Button } from "antd";
+import { Form, Icon, Input, Button, message } from "antd";
 import { reqLogin } from "../../api";
+import memoryUtils from "../../util/memoryUtils";
+import storageUtils from "../../util/storageUtils";
+import { Redirect } from "react-router-dom";
 
 /*
 登录的路由组件
@@ -11,16 +14,24 @@ import { reqLogin } from "../../api";
 class Login extends Component {
   handleSubmit = event => {
     event.preventDefault();
-    this.props.form.validateFields((err, values) => {
+    this.props.form.validateFields(async (err, values) => {
+      const { username, password } = values;
+      const result = await reqLogin(username, password);
       if (!err) {
-        const { username, password } = values;
-        reqLogin(username, password)
-          .then(response => {
-            console.log("成功了");
-          })
-          .catch(err => {
-            console.log("失败了");
-          });
+        if (result.status === 0) {
+          message.success("登录成功");
+          //保存当前的user到memoryUtils里面的user中去
+          const user = result.data;
+          memoryUtils.user = user; //保存到内存中
+          storageUtils.saveUser(user); //保存到local中
+          console.log(user);
+          //跳转到管理界面，不需要回退用replace,需要回退用push
+          this.props.history.replace("/");
+        } else {
+          message.error(result.msg);
+        }
+      } else {
+        console.log("检测失败");
       }
     });
   };
@@ -40,6 +51,11 @@ class Login extends Component {
     }
   };
   render() {
+    //如果用户已经登录，自然跳转到管理页面
+    const user = memoryUtils.user;
+    if (user && user._id) {
+      return <Redirect to="/" />;
+    }
     const form = this.props.form;
     const { getFieldDecorator } = form;
     return (
