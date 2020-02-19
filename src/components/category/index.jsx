@@ -1,7 +1,10 @@
 import React, { Component } from "react";
-import { Card, Button, Icon, Table, message ,Modal} from "antd";
+import { Card, Button, Icon, Table, message, Modal } from "antd";
 import LinkButton from "../linkbutton";
 import { reqCategory } from "../../api";
+import AddForm from "./addform";
+import UpdateForm from "./updateform";
+
 export default class Category extends Component {
   state = {
     //一级分类数据
@@ -13,7 +16,7 @@ export default class Category extends Component {
     //父分类id
     parentName: "",
     loading: false,
-    showStatus:0,//默认为0，1表示打开添加的表单，2表示打开修改的表单,0表示不显示
+    showStatus: 0 //默认为0，1表示打开添加的表单，2表示打开修改的表单,0表示不显示
   };
   categoryColumn = () => {
     const { parentId } = this.state;
@@ -30,7 +33,13 @@ export default class Category extends Component {
         // rowObj是当前对象
         render: rowObj => (
           <span>
-            <LinkButton onClick={this.updateCategory}>修改分类</LinkButton>
+            <LinkButton
+              onClick={() => {
+                this.updateCategory(rowObj);
+              }}
+            >
+              修改分类
+            </LinkButton>
             {/* //如何向回调函数传递参数：先定义一个匿名函数，在函数调用处理的函数并传入数据
              如果onClick={this.showSubCategory(rowObj)会立即调用，而我们需要的是点击时候调用} */}
             {this.parentId === "0" ? (
@@ -95,38 +104,41 @@ export default class Category extends Component {
     //获取二级分类数据并显示
   };
   //点击一级分类列表渲染数据
-  showCategroy=()=>{
+  showCategroy = () => {
     this.setState({
-      subCategoryList:[],
-      parentId:'0',
-      parentName:''
-    })
-  }
+      subCategoryList: [],
+      parentId: "0",
+      parentName: ""
+    });
+  };
   //点击添加弹出添加表单的框
-  addCategory=()=>{
+  addCategory = () => {
     this.setState({
-      showStatus:1
-    })
-  }
+      showStatus: 1
+    });
+  };
   //点击修改分类弹窗弹出表单
-  updateCategory=()=>{
+  updateCategory = category => {
+    //保存category到this中
+    this.category = category;
+    console.log(this.category)
     this.setState({
-      showStatus:2
-    })
-  }
-  handleCancel=()=>{
+      showStatus: 2
+    });
+  };
+  handleCancel = () => {
     this.setState({
-      showStatus:0
-    })
-  }
+      showStatus: 0
+    });
+  };
   //点击添加表单确定添加
-  addCate =()=>{
-    console.log(this)
-  }
+  addCate = () => {
+    console.log(this);
+  };
   //点击修改表单确定修改
-  changeCategory=()=>{
-    console.log(this)
-  }
+  changeCategory = () => {
+    console.log(this);
+  };
   //为第一次render()准备数据
   componentWillMount() {
     this.categoryColumn();
@@ -145,13 +157,14 @@ export default class Category extends Component {
       parentName,
       showStatus
     } = this.state;
+    const category = this.category || {};
     const title =
       parentId === "0" ? (
         "一级分类列表"
       ) : (
         <span>
           <LinkButton onClick={this.showCategroy}>一级分类列表</LinkButton>
-          <Icon type="arrow-right" style={{marginRight:5}}></Icon>
+          <Icon type="arrow-right" style={{ marginRight: 5 }}></Icon>
           <span>{parentName}</span>
         </span>
       );
@@ -177,24 +190,20 @@ export default class Category extends Component {
         {/* 添加的表单 */}
         <Modal
           title="添加分类"
-          visible={showStatus===1}
+          visible={showStatus === 1}
           onOk={this.addCate}
           onCancel={this.handleCancel}
         >
-          <p>Some contents...</p>
-          <p>Some contents...</p>
-          <p>Some contents...</p>
+          <AddForm />
         </Modal>
         {/* 修改的表单 */}
         <Modal
           title="修改分类"
-          visible={showStatus===2}
+          visible={showStatus === 2}
           onOk={this.changeCategory}
           onCancel={this.handleCancel}
         >
-          <p>Some contents...</p>
-          <p>Some contents...</p>
-          <p>Some contents...</p>
+          <UpdateForm categoryName={category.name} />
         </Modal>
       </div>
     );
